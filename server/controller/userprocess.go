@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"server/model"
+	"server/model/dao"
 	"server/util"
 )
 
@@ -11,21 +13,22 @@ type UserProcess struct {
 	Conn net.Conn
 }
 
-func (U *UserProcess) HandLogin(mes *util.Message) (err error) {
+func (U *UserProcess) HandLogin(mes *model.Message) (err error) {
 	//先从message中取出data，并反序列化成login
-	var loginMessage util.LoginMes
+	var loginMessage model.LoginMes
 	err = json.Unmarshal([]byte(mes.Data), &loginMessage)
 	if err != nil {
 		fmt.Println("unmarshal failed")
 		return
 	}
 
-	var resMessage util.Message
+	var resMessage model.Message
 	resMessage.Type = util.LoginResMesType
 
-	var loginres util.LoginRes
+	var loginres model.LoginRes
 
-	if loginMessage.UserId == 100 && loginMessage.UserPwd == "123456" { //合法
+	_, err = dao.MyUserDao.Login(loginMessage.UserId, loginMessage.UserPwd)
+	if err == nil { //合法
 		loginres.Errno = util.Success
 		loginres.Message = "登录成功"
 	} else { //不合法用户

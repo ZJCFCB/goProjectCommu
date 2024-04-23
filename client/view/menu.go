@@ -1,6 +1,7 @@
 package view
 
 import (
+	"client/controller"
 	"fmt"
 )
 
@@ -26,10 +27,20 @@ func (c *Conutrol) Run() {
 			fmt.Scanln(&name)
 			fmt.Printf("请输入密码：")
 			fmt.Scanln(&password)
-			if LoginCheck(name, password) == nil {
+
+			var up *controller.UserProcess = &controller.UserProcess{}
+			up.MakeConn("localhost:8889")
+			defer up.Conn.Close() //记得退出的时候关闭连接  （其实我觉得这个连接应该作为一个全局变量）
+
+			ok, err := up.LoginCheck(name, password) //根据账号密码进行登录校验
+			if ok {
 				fmt.Println("登录成功")
+
+				controller.ShowLoginMenu()
+
+				go controller.ServerProcessMessage(up.Conn) //开启一个协程保持通讯
 			} else {
-				fmt.Println("账户名或密码错误")
+				fmt.Println("登录失败", err)
 			}
 
 		case 2:

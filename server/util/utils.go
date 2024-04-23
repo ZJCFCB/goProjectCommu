@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"server/model"
 )
 
 type Transfer struct {
@@ -33,7 +34,7 @@ func (T *Transfer) WritePkg(data []byte) (err error) {
 	return
 }
 
-func (T *Transfer) ReadPkg() (mes Message, err error) {
+func (T *Transfer) ReadPkg() (mes model.Message, err error) {
 	//读取客户端发来的数据
 	fmt.Println("waitting reading")
 	_, err = T.Conn.Read(T.Buffer[:4])

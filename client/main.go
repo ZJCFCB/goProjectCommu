@@ -1,8 +1,8 @@
 package main
 
 import (
+	"client/view"
 	"fmt"
-	"goProjectCommu/view"
 )
 
 func main() {

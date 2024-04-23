@@ -1,4 +1,4 @@
-package util
+package model
 
 // 登录返回结果
 type LoginRes struct {

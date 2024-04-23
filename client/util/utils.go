@@ -1,61 +1,63 @@
 package util
 
 import (
+	"client/model"
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"net"
 )
 
-type Message struct {
-	Type string `json:"type"`
-	Data string `json:"data"`
+type Transfer struct {
+	Conn   net.Conn
+	Buffer [8096]byte
 }
 
-func ReadPkg(conn net.Conn) (mes Message, err error) {
-	//读取客户端发来的数据
-	var buffer []byte = make([]byte, 8096)
-	fmt.Println("waitting reading")
-	_, err = conn.Read(buffer[:4])
+func (T *Transfer) WritePkg(data []byte) (err error) {
+	//先发送长度给客户端
+
+	var pkglen uint32
+	pkglen = uint32(len(data))
+	binary.BigEndian.PutUint32(T.Buffer[:4], pkglen)
+
+	_, err = T.Conn.Write(T.Buffer[:4])
+
 	if err != nil {
+		fmt.Println("conn.Write failed", err)
+	}
+
+	_, err = T.Conn.Write(data)
+
+	if err != nil {
+		fmt.Println("conn.Write failed", err)
+	}
+	return
+}
+
+func (T *Transfer) ReadPkg() (mes model.Message, err error) {
+	//读取客户端发来的数据
+	fmt.Println("waitting reading")
+	_, err = T.Conn.Read(T.Buffer[:4])
+	if err != nil {
+		fmt.Println("读取服务器发来的长度数据失败")
 		fmt.Println("conn.Read failed")
 		return
 	}
-	var pkglen uint32 = binary.BigEndian.Uint32(buffer[:4])
+	var pkglen uint32 = binary.BigEndian.Uint32(T.Buffer[:4])
 
-	n, err := conn.Read(buffer[:pkglen])
+	n, err := T.Conn.Read(T.Buffer[:pkglen])
 	if n != int(pkglen) || err != nil {
+
+		fmt.Println("读取服务器发来的数据失败")
 		fmt.Println("conn.Read failed")
 		return
 	}
 
 	//反序列化package
-	err = json.Unmarshal(buffer[:pkglen], &mes)
+	err = json.Unmarshal(T.Buffer[:pkglen], &mes)
 	if err != nil {
 		fmt.Println("json.Unmarshal failed")
 		return
-	}
-	return
-}
-
-func WritePkg(conn net.Conn, data []byte) (err error) {
-	//先发送长度给客户端
-
-	var pkglen uint32
-	pkglen = uint32(len(data))
-	var buffer [4]byte
-	binary.BigEndian.PutUint32(buffer[:4], pkglen)
-
-	_, err = conn.Write(buffer[:4])
-
-	if err != nil {
-		fmt.Println("conn.Write failed", err)
-	}
-
-	_, err = conn.Write(data)
-
-	if err != nil {
-		fmt.Println("conn.Write failed", err)
 	}
 	return
 }
