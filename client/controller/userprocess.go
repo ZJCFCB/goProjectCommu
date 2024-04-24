@@ -8,11 +8,15 @@ import (
 	"net"
 )
 
+/*
+这里主要是用户控制类
+包括登录校验，用户注册，聊天等
+*/
 type UserProcess struct {
 	Conn net.Conn
 }
 
-func (U *UserProcess) MakeConn(ip string) (err error) {
+func (U *UserProcess) MakeConn(ip string) (err error) { //与传进来的ip建立链接（服务器）
 	conn, err := net.Dial("tcp", ip)
 	if err != nil {
 		return err
@@ -21,26 +25,33 @@ func (U *UserProcess) MakeConn(ip string) (err error) {
 	return nil
 }
 
-func (U *UserProcess) LoginCheck(id int, passwd string) (isok bool, err error) {
+func (U *UserProcess) LoginCheck(id int, passwd, name string) (isok bool, err error) {
+
 	//准备发数据 message
+	//model.Message 封装与服务器的数据传输，包括消息类型和数据
 	var mes model.Message
 	mes.Type = util.LoginMesType
 
-	//创建登录message
+	//model.LoginMes 封装登录信息，包括用户id、密码、用户名字
 	var loginMes model.LoginMes
 	loginMes.UserId = id
 	loginMes.UserPwd = passwd
+	loginMes.UserName = name
 
-	//将这部分信息序列化，然后给data
-	data, err := json.Marshal(loginMes) //Marshal 序列化后的data 类型为 []byte
+	//首先，将model.LoginMes 序列化，这部分是需要传输的内容
+	//Marshal 序列化后的data 类型为 []byte
+	data, err := json.Marshal(loginMes)
 	if err != nil {
-		return false, err
+		return false, util.ERROR_MARSHAL_FAILED
 	}
-	mes.Data = string(data) //把登录信息放在请求结构体的data部分
 
+	//把登录信息放在请求结构体的data部分
+	mes.Data = string(data)
+
+	// 将发送给服务端的信息序列化
 	data, err = json.Marshal(mes)
 	if err != nil {
-		return false, err
+		return false, util.ERROR_MARSHAL_FAILED
 	}
 
 	// 用于控制收发数据
@@ -48,15 +59,13 @@ func (U *UserProcess) LoginCheck(id int, passwd string) (isok bool, err error) {
 		Conn: U.Conn,
 	}
 
-	err = tf.WritePkg(data) //发送数据
+	err = tf.WritePkg(data)
 
 	if err != nil {
-		fmt.Println("客户端发送数据失败")
 		return false, err
 	}
 
 	//处理返回的数据
-
 	mes, err = tf.ReadPkg()
 
 	if err != nil {
@@ -70,14 +79,15 @@ func (U *UserProcess) LoginCheck(id int, passwd string) (isok bool, err error) {
 		return false, err
 	}
 
-	if loginResMes.Errno == 200 {
-		fmt.Println("登录成功")
-		for {
-			go ServerProcessMessage(U.Conn)
-			ShowLoginMenu()
-		}
-	} else {
-		fmt.Println("账户名或密码错误")
+	fmt.Println(loginResMes.Message)
+
+	switch loginResMes.Errno {
+	case util.Success:
+		return true, nil
+	case util.NoRegistered:
+		return false, util.ERROR_USER_NOTEXIT
+	case util.PasswdIsWrong:
+		return false, util.ERROR_PASSWD_RONG
 	}
 	return
 }

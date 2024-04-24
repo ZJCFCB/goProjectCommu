@@ -2,10 +2,9 @@ package controller
 
 import (
 	"encoding/json"
-	"fmt"
 	"net"
 	"server/model"
-	"server/model/dao"
+	"server/service"
 	"server/util"
 )
 
@@ -18,39 +17,55 @@ func (U *UserProcess) HandLogin(mes *model.Message) (err error) {
 	var loginMessage model.LoginMes
 	err = json.Unmarshal([]byte(mes.Data), &loginMessage)
 	if err != nil {
-		fmt.Println("unmarshal failed")
-		return
+		return util.ERROR_UN_MARSHAL_FAILED
 	}
 
+	//返回消息
 	var resMessage model.Message
 	resMessage.Type = util.LoginResMesType
 
+	//返回登录信息
 	var loginres model.LoginRes
+	var userservice service.UserService = service.UserService{}
 
-	_, err = dao.MyUserDao.Login(loginMessage.UserId, loginMessage.UserPwd)
-	if err == nil { //合法
+	//进行登录校验
+	_, err = userservice.Login(loginMessage.UserId, loginMessage.UserPwd)
+
+	// 根据error 决定返回的状态码是多少
+	switch err {
+	case nil:
 		loginres.Errno = util.Success
 		loginres.Message = "登录成功"
-	} else { //不合法用户
+	case util.ERROR_USER_NOTEXIT:
 		loginres.Errno = util.NoRegistered
 		loginres.Message = "用户不存在"
+	case util.ERROR_PASSWD_RONG:
+		loginres.Errno = util.PasswdIsWrong
+		loginres.Message = "用户名或密码错误"
+	default:
+		loginres.Errno = util.SERVICE_HAS_WRONG
+		loginres.Message = "服务器内部发生错误"
 	}
+
 	data, err := json.Marshal(loginres)
 	if err != nil {
-		fmt.Println("xuliehuashibai ")
+		return util.ERROR_MARSHAL_FAILED
 	}
 
 	resMessage.Data = string(data)
 
 	data, err = json.Marshal(resMessage)
 	if err != nil {
-		fmt.Println("xuliehuashibai ")
+		return util.ERROR_MARSHAL_FAILED
 	}
 
 	// 发送data
 	var tf *util.Transfer = &util.Transfer{
 		Conn: U.Conn,
 	}
-	tf.WritePkg(data)
-	return
+	err = tf.WritePkg(data)
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -3,6 +3,7 @@ package dao
 import (
 	"encoding/json"
 	"server/model"
+	"server/util"
 
 	"github.com/garyburd/redigo/redis"
 )
@@ -27,40 +28,27 @@ func InitUserDao() {
 	MyUserDao = NewUserDao(RedisPool)
 }
 
-// 根据用户ID，返回实例
-func (U *UserDao) getUserById(conn redis.Conn, id int) (user model.User, err error) {
+// 根据用户ID，返回redis中的用户信息
+func (U *UserDao) GetUserById(id int) (user model.User, err error) {
+
+	// 从连接池中取出一个链接
+	conn := U.Pool.Get()
+	defer conn.Close()
+
 	res, err := redis.String(conn.Do("HGet", "user", id))
 	if err != nil {
-		if err == redis.ErrNil { // 表示不存在
-			err = model.ERROR_USER_NOTEXIT
-			return
+
+		//用户不存在
+		if err == redis.ErrNil {
+			return user, util.ERROR_USER_NOTEXIT
 		}
-		return
+		return user, err
 	}
 
 	//需要把res反序列成user实例
-
 	err = json.Unmarshal([]byte(res), &user)
 	if err != nil {
-		return
+		return user, util.ERROR_UN_MARSHAL_FAILED
 	}
-	return
-}
-
-func (U *UserDao) Login(id int, pwd string) (user model.User, err error) {
-	conn := U.Pool.Get() // 从连接池中取出一个链接
-	defer conn.Close()
-
-	user, err = U.getUserById(conn, id)
-	if err != nil {
-		return
-	}
-
-	//校验密码
-
-	if user.UserPwd == pwd {
-		return user, nil
-	} else {
-		return user, model.ERROR_PASSWD_RONG
-	}
+	return user, nil
 }
