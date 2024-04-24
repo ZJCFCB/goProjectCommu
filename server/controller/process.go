@@ -20,10 +20,12 @@ func (B *BaseProcess) ServerProcessMes(mes *model.Message) (err error) { // 根�
 		// 处理登录的相关信息
 		up := &UserProcess{Conn: B.Conn}
 		err = up.HandLogin(mes)
-
+	case util.RegistMesType:
+		up := &UserProcess{Conn: B.Conn}
+		err = up.HandRegist(mes)
 	default:
 	}
-	return
+	return err
 }
 
 // 处理信息的入口
@@ -35,6 +37,8 @@ func (B *BaseProcess) Process() (err error) {
 			return err
 		}
 		//收到了来自客户端的消息，交给ServerProcessMes处理
-		B.ServerProcessMes(&mess)
+		//这里面的错误处理要根据类型判断是否为服务器内部错误造成的，如果不是那么就返回给客户端
+		err = B.ServerProcessMes(&mess)
+
 	}
 }

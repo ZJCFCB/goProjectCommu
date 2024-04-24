@@ -24,19 +24,17 @@ func (c *EnterClient) Run() {
 		case 1:
 			//处理用户登录的相关信息
 			var id int
-			var password, name string
+			var password string
 			fmt.Printf("请输入用户名：")
 			fmt.Scanln(&id)
 			fmt.Printf("请输入密码：")
 			fmt.Scanln(&password)
-			fmt.Printf("请输入昵称：")
-			fmt.Scanln(&name)
 			var up *controller.UserProcess = &controller.UserProcess{}
 
 			up.MakeConn("localhost:8889") //与服务器建立连接（8889端口）
 			defer up.Conn.Close()         //记得退出的时候关闭连接  （其实我觉得这个连接应该作为一个全局变量）
 
-			ok, err := up.LoginCheck(id, password, name) //根据用户输入的账号密码进行登录校验
+			ok, err := up.LoginCheck(id, password) //根据用户输入的账号密码进行登录校验
 			if ok {
 				fmt.Println("登录成功")
 
@@ -48,7 +46,28 @@ func (c *EnterClient) Run() {
 			}
 
 		case 2:
-			fmt.Println("注册成功")
+			var id int
+			var passwd, name string
+
+			fmt.Printf("请输入用户名：")
+			fmt.Scanln(&id)
+			fmt.Printf("请输入密码：")
+			fmt.Scanln(&passwd)
+			fmt.Printf("请输入姓名：")
+			fmt.Scanln(&name)
+
+			var up *controller.UserProcess = &controller.UserProcess{}
+
+			up.MakeConn("localhost:8889") //与服务器建立连接（8889端口）
+			defer up.Conn.Close()         //记得退出的时候关闭连接  （其实我觉得这个连接应该作为一个全局变量）
+
+			ok, err := up.Regist(id, passwd, name)
+
+			if ok {
+				fmt.Println("用户注册成功，可以退出登录")
+			} else {
+				fmt.Println("用户注册失败", err)
+			}
 		case 3:
 			fmt.Println("退出系统")
 			loop = true

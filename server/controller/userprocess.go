@@ -69,3 +69,20 @@ func (U *UserProcess) HandLogin(mes *model.Message) (err error) {
 	}
 	return nil
 }
+
+func (U *UserProcess) HandRegist(mes *model.Message) (err error) {
+
+	//返回消息
+	var registRes model.Message
+	registRes.Type = util.RegistResMesType
+
+	//先从mes中取出信息并反序列化
+	var registmes model.RegistMes
+
+	err = json.Unmarshal([]byte(mes.Data), &registmes)
+
+	if err != nil {
+		return util.ERROR_UN_MARSHAL_FAILED
+	}
+	return
+}

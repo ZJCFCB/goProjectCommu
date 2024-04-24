@@ -28,6 +28,7 @@ func (s *EnterServer) Run() (err error) {
 	}
 }
 
+// 这里会不停地读取消息，保持住通讯
 func Communication(conn net.Conn) {
 	defer conn.Close()
 	pro := controller.BaseProcess{Conn: conn}

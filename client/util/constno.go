@@ -1,6 +1,8 @@
 package util
 
 const (
-	LoginMesType    = "LoginMesType"
-	LoginResMesType = "LoginResMesType"
+	LoginMesType     = "LoginMesType"
+	LoginResMesType  = "LoginResMesType"
+	RegistMesType    = "RegistMesType"
+	RegistResMesType = "RegistResMesType"
 )
