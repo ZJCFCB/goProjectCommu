@@ -10,7 +10,8 @@ import (
 )
 
 type UserProcess struct {
-	Conn net.Conn
+	Conn   net.Conn
+	UserId int
 }
 
 func (U *UserProcess) HandLogin(mes *model.Message) (err error) {
@@ -37,6 +38,14 @@ func (U *UserProcess) HandLogin(mes *model.Message) (err error) {
 	case nil:
 		loginres.Errno = util.Success
 		loginres.Message = "登录成功"
+		//登录成功后，把在线用户的id和userprecess放入在线列表中
+		U.UserId = loginMessage.UserId
+		UserMgr.AddOnlineUser(U)
+		// 遍历一下UserMgr,把在线用户ID放入其中
+		for key, _ := range UserMgr.OnlineUser {
+			loginres.OnlineUserIds = append(loginres.OnlineUserIds, key)
+		}
+
 	case util.ERROR_USER_NOTEXIT:
 		loginres.Errno = util.NoRegistered
 		loginres.Message = "用户不存在"

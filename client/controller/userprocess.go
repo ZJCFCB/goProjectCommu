@@ -147,5 +147,4 @@ func (U *UserProcess) Regist(id int, passwd, name string) (isok bool, err error)
 	default:
 		return false, util.ERROR_UN_KNOW
 	}
-	return
 }
