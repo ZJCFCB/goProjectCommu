@@ -52,3 +52,33 @@ func (U *UserDao) GetUserById(id int) (user model.User, err error) {
 	}
 	return user, nil
 }
+
+func (U *UserDao) IdIsExist(id int) (ok bool, err error) {
+
+	conn := U.Pool.Get()
+	defer conn.Close()
+
+	_, err = redis.String(conn.Do("HGet", "user", id))
+
+	if err != nil {
+		if err == redis.ErrNil {
+			return false, nil
+		} else {
+			return false, util.ERROR_READ_FROM_REDIS_FAILED //有报错的话，直接抛出去
+		}
+	}
+	return true, nil //查询成功了
+}
+
+func (U *UserDao) SetInfromToRedis(id int, data string) (err error) {
+
+	conn := U.Pool.Get()
+	defer conn.Close()
+
+	_, err = conn.Do("HSet", "user", id, data)
+
+	if err != nil {
+		return util.ERROR_PUSH_TO_REDIS_FAILED
+	}
+	return nil
+}

@@ -143,7 +143,9 @@ func (U *UserProcess) Regist(id int, passwd, name string) (isok bool, err error)
 	case util.Success:
 		return true, nil
 	case util.UserHasExist:
-		return false, util.ERROR_PASSWD_RONG
+		return false, util.ERROR_USER_IS_EXIST
+	default:
+		return false, util.ERROR_UN_KNOW
 	}
 	return
 }

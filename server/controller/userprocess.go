@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"net"
 	"server/model"
 	"server/service"
@@ -84,5 +85,48 @@ func (U *UserProcess) HandRegist(mes *model.Message) (err error) {
 	if err != nil {
 		return util.ERROR_UN_MARSHAL_FAILED
 	}
-	return
+
+	// 开始注册
+	var userservice service.UserService = service.UserService{}
+	isSuccess, err := userservice.Regist(registmes.UserId, registmes.UserPwd, registmes.UserName)
+
+	//处理返回结果
+	var registResModel model.RegistRes
+	if isSuccess {
+		registResModel.Errno = util.Success
+		registResModel.Message = "注册成功"
+	} else {
+		if err == util.ERROR_USER_HAS_EXIT {
+			registResModel.Errno = util.UserHasExist
+			registResModel.Message = "注册失败，用户已经存在"
+		} else {
+			registResModel.Errno = util.SERVICE_HAS_WRONG
+			registResModel.Message = "服务器内部错误"
+		}
+	}
+
+	data, err := json.Marshal(registResModel)
+
+	if err != nil {
+		return util.ERROR_MARSHAL_FAILED
+	}
+
+	registRes.Data = string(data)
+
+	data, err = json.Marshal(registRes)
+
+	if err != nil {
+		return util.ERROR_MARSHAL_FAILED
+	}
+
+	// 发送data
+	var tf *util.Transfer = &util.Transfer{
+		Conn: U.Conn,
+	}
+	fmt.Println("返回给客户端的数据 ", string(data))
+	err = tf.WritePkg(data)
+	if err != nil {
+		return err
+	}
+	return nil
 }
