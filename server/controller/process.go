@@ -29,6 +29,7 @@ func (B *BaseProcess) ServerProcessMes(mes *model.Message) (err error) { // 根�
 }
 
 // 处理信息的入口
+// 不停地读取用户传过来的信息
 func (B *BaseProcess) Process() (err error) {
 	for {
 		tf := &util.Transfer{Conn: B.Conn}

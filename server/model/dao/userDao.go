@@ -38,7 +38,6 @@ func (U *UserDao) GetUserById(id int) (user model.User, err error) {
 	res, err := redis.String(conn.Do("HGet", "user", id))
 	if err != nil {
 
-		//用户不存在
 		if err == redis.ErrNil {
 			return user, util.ERROR_USER_NOTEXIT
 		}

@@ -18,7 +18,7 @@ type UserProcess struct {
 func (U *UserProcess) MakeConn(ip string) (err error) { //与传进来的ip建立链接（服务器）
 	conn, err := net.Dial("tcp", ip)
 	if err != nil {
-		return err
+		return util.ERROR_CONN_TO_SERVER_FAIL
 	}
 	U.Conn = conn
 	return nil
