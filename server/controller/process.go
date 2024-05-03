@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net"
 	"server/model"
 	"server/util"
@@ -20,9 +21,19 @@ func (B *BaseProcess) ServerProcessMes(mes *model.Message) (err error) { // 根�
 		// 处理登录的相关信息
 		up := &UserProcess{Conn: B.Conn}
 		err = up.HandLogin(mes)
+
+		fmt.Println("login success")
+		UserMgr.PrintUser()
 	case util.RegistMesType:
+		//处理注册相关的信息
 		up := &UserProcess{Conn: B.Conn}
 		err = up.HandRegist(mes)
+	case util.ExitType:
+		//处理用户退出的相关信息
+		up := &UserProcess{Conn: B.Conn}
+		err = up.HandExit(mes)
+		fmt.Println("exit success")
+		UserMgr.PrintUser()
 	default:
 	}
 	return err
@@ -40,6 +51,10 @@ func (B *BaseProcess) Process() (err error) {
 		//收到了来自客户端的消息，交给ServerProcessMes处理
 		//这里面的错误处理要根据类型判断是否为服务器内部错误造成的，如果不是那么就返回给客户端
 		err = B.ServerProcessMes(&mess)
+		if err == util.ERROR_EXIT_SUCCESS {
+			break
+		}
 
 	}
+	return err
 }

@@ -2,6 +2,7 @@ package view
 
 import (
 	"client/controller"
+	"client/util"
 	"fmt"
 )
 
@@ -42,13 +43,15 @@ func (c *EnterClient) Run() {
 
 			//根据用户输入的账号密码进行登录校验
 			ok, err := up.LoginCheck(id, password)
+			up.Id = id
 			if ok {
 				fmt.Println("登录成功")
-
-				controller.ShowLoginMenu()
-
-				//开启一个协程保持通讯，接下来的用户操作在这里面完成
-				go controller.ServerProcessMessage(up.Conn)
+				//登录成果后用户在这里面完成登陆后的操作 比如聊天
+				var us *controller.Userserve = &controller.Userserve{
+					Conn: up.Conn,
+					Id:   id,
+				}
+				us.ServerProcessMessage()
 			} else {
 				fmt.Println("用户登录失败", err)
 			}
@@ -78,23 +81,12 @@ func (c *EnterClient) Run() {
 				fmt.Println("用户注册失败", err)
 			}
 		case 3:
-			loop = Exit()
+			loop = util.Exit()
 		default:
 			fmt.Println("输入错误")
 		}
 		if loop {
 			break
 		}
-	}
-}
-
-func Exit() bool {
-	var confir string
-	fmt.Printf("你确定要退出系统吗？请输入Y或y确认：")
-	fmt.Scanln(&confir)
-	if confir == "Y" || confir == "y" {
-		return true
-	} else {
-		return false
 	}
 }

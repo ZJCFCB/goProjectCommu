@@ -13,6 +13,7 @@ import (
 */
 type UserProcess struct {
 	Conn net.Conn
+	Id   int
 }
 
 func (U *UserProcess) MakeConn(ip string) (err error) { //与传进来的ip建立链接（服务器）
@@ -74,7 +75,7 @@ func (U *UserProcess) LoginCheck(id int, passwd string) (isok bool, err error) {
 	err = json.Unmarshal([]byte(mes.Data), &loginResMes) // 对收到的数据反序列化
 
 	if err != nil {
-		return false, err
+		return false, util.ERROR_UN_MARSHAL_FAILED
 	}
 
 	switch loginResMes.Errno {

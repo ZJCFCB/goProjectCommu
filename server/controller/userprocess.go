@@ -2,7 +2,6 @@ package controller
 
 import (
 	"encoding/json"
-	"fmt"
 	"net"
 	"server/model"
 	"server/service"
@@ -41,10 +40,6 @@ func (U *UserProcess) HandLogin(mes *model.Message) (err error) {
 		//登录成功后，把在线用户的id和userprecess放入在线列表中
 		U.UserId = loginMessage.UserId
 		UserMgr.AddOnlineUser(U)
-		// 遍历一下UserMgr,把在线用户ID放入其中
-		for key, _ := range UserMgr.OnlineUser {
-			loginres.OnlineUserIds = append(loginres.OnlineUserIds, key)
-		}
 
 	case util.ERROR_USER_NOTEXIT:
 		loginres.Errno = util.NoRegistered
@@ -132,10 +127,52 @@ func (U *UserProcess) HandRegist(mes *model.Message) (err error) {
 	var tf *util.Transfer = &util.Transfer{
 		Conn: U.Conn,
 	}
-	fmt.Println("返回给客户端的数据 ", string(data))
 	err = tf.WritePkg(data)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (U *UserProcess) HandExit(mes *model.Message) (err error) {
+	var mesRes model.Message
+	mesRes.Type = util.ExitType
+
+	var exitRes model.ExitResMes
+	var exitMes model.ExitMes
+
+	err = json.Unmarshal([]byte(mes.Data), &exitMes)
+	if err != nil {
+		return util.ERROR_UN_MARSHAL_FAILED
+	}
+
+	UserMgr.DelOnlineUser(exitMes.UserId)
+
+	exitRes.Errno = util.Success
+	exitRes.Message = "用户成功退出"
+
+	data, err := json.Marshal(exitRes)
+
+	if err != nil {
+		return err
+	}
+
+	mesRes.Data = string(data)
+
+	data, err = json.Marshal(mesRes)
+
+	if err != nil {
+		return err
+	}
+
+	// 发送data
+	var tf *util.Transfer = &util.Transfer{
+		Conn: U.Conn,
+	}
+	err = tf.WritePkg(data)
+	if err != nil {
+		return err
+	}
+	return util.ERROR_EXIT_SUCCESS
+
 }

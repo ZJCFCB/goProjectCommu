@@ -7,6 +7,7 @@ const (
 	NoRegistered
 	PasswdIsWrong
 	UserHasExist
+	ExitFailed
 )
 
 const (
@@ -26,4 +27,5 @@ var (
 	ERROR_READ_CONN_FAILED    = errors.New("read from conn failed")
 	ERROR_UN_KNOW             = errors.New("未知错误，请仔细排查")
 	ERROR_CONN_TO_SERVER_FAIL = errors.New("与服务器连接失败")
+	ERROR_EXIT_FAIL           = errors.New("用户退出失败")
 )

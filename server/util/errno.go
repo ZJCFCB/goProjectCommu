@@ -14,6 +14,7 @@ const (
 )
 
 var (
+	ERROR_EXIT_SUCCESS           = errors.New("用户成功退出")
 	ERROR_USER_NOTEXIT           = errors.New("用户不存在")
 	ERROR_user_IS_EXIST          = errors.New("用户已经存在，请直接登录")
 	ERROR_PASSWD_RONG            = errors.New("密码错误")
@@ -26,4 +27,5 @@ var (
 	ERROR_READ_CONN_FAILED       = errors.New("read from conn failed")
 	ERROR_PUSH_TO_REDIS_FAILED   = errors.New("写入redis失败")
 	ERROR_READ_FROM_REDIS_FAILED = errors.New("从redis中读取失败")
+	ERROR_USER_NOT_ONLINE        = errors.New("该用户不在线")
 )

@@ -5,4 +5,6 @@ const (
 	LoginResMesType  = "LoginResMesType"
 	RegistMesType    = "RegistMesType"
 	RegistResMesType = "RegistResMesType"
+	OnlineFriendType = "OnlineFriendType"
+	ExitType         = "ExitType"
 )
