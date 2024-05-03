@@ -7,4 +7,5 @@ const (
 	RegistResMesType = "RegistResMesType"
 	OnlineFriendType = "OnlineFriendType"
 	ExitType         = "ExitType"
+	OnlineListType   = "OnlineListType"
 )

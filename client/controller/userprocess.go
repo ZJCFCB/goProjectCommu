@@ -27,11 +27,6 @@ func (U *UserProcess) MakeConn(ip string) (err error) { //与传进来的ip建�
 
 func (U *UserProcess) LoginCheck(id int, passwd string) (isok bool, err error) {
 
-	//准备发数据 message
-	//model.Message 封装与服务器的数据传输，包括消息类型和数据
-	var mes model.Message
-	mes.Type = util.LoginMesType
-
 	//model.LoginMes 封装登录信息，包括用户id、密码、用户名字
 	var loginMes model.LoginMes
 	loginMes.UserId = id
@@ -44,28 +39,19 @@ func (U *UserProcess) LoginCheck(id int, passwd string) (isok bool, err error) {
 		return false, util.ERROR_MARSHAL_FAILED
 	}
 
-	//把登录信息放在请求结构体的data部分
-	mes.Data = string(data)
-
-	// 将发送给服务端的信息序列化
-	data, err = json.Marshal(mes)
-	if err != nil {
-		return false, util.ERROR_MARSHAL_FAILED
-	}
-
 	// 用于控制收发数据
 	tf := &util.Transfer{
 		Conn: U.Conn,
 	}
 
-	err = tf.WritePkg(data)
+	err = tf.SendMessage(data, util.LoginMesType)
 
 	if err != nil {
 		return false, err
 	}
 
 	//处理返回的数据
-	mes, err = tf.ReadPkg()
+	mes, err := tf.ReadPkg()
 
 	if err != nil {
 		return false, err
@@ -91,10 +77,6 @@ func (U *UserProcess) LoginCheck(id int, passwd string) (isok bool, err error) {
 
 func (U *UserProcess) Regist(id int, passwd, name string) (isok bool, err error) {
 
-	//准备发数据的mess
-	var mes model.Message
-	mes.Type = util.RegistMesType
-
 	//用于封装注册信息
 	var registmes model.RegistMes
 	registmes.UserId = id
@@ -109,25 +91,17 @@ func (U *UserProcess) Regist(id int, passwd, name string) (isok bool, err error)
 		return false, util.ERROR_MARSHAL_FAILED
 	}
 
-	//开始序列化发送的亲求信息
-	mes.Data = string(data)
-	data, err = json.Marshal(mes)
-
-	if err != nil {
-		return false, util.ERROR_MARSHAL_FAILED
-	}
-
 	//开始跟服务器端转发消息
 
 	tf := &util.Transfer{Conn: U.Conn}
 
-	err = tf.WritePkg(data)
+	err = tf.SendMessage(data, util.RegistMesType)
 	if err != nil {
 		return false, err
 	}
 
 	//然后等待读取服务器端返回的数据
-	mes, err = tf.ReadPkg()
+	mes, err := tf.ReadPkg()
 
 	if err != nil {
 		return false, err

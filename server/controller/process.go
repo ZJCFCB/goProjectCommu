@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"net"
 	"server/model"
 	"server/util"
@@ -21,9 +20,6 @@ func (B *BaseProcess) ServerProcessMes(mes *model.Message) (err error) { // 根�
 		// 处理登录的相关信息
 		up := &UserProcess{Conn: B.Conn}
 		err = up.HandLogin(mes)
-
-		fmt.Println("login success")
-		UserMgr.PrintUser()
 	case util.RegistMesType:
 		//处理注册相关的信息
 		up := &UserProcess{Conn: B.Conn}
@@ -32,8 +28,10 @@ func (B *BaseProcess) ServerProcessMes(mes *model.Message) (err error) { // 根�
 		//处理用户退出的相关信息
 		up := &UserProcess{Conn: B.Conn}
 		err = up.HandExit(mes)
-		fmt.Println("exit success")
-		UserMgr.PrintUser()
+	case util.OnlineListType:
+		up := &UserProcess{Conn: B.Conn}
+		err = up.ReturnOnlineList()
+
 	default:
 	}
 	return err

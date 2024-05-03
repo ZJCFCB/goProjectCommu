@@ -21,10 +21,6 @@ func (U *UserProcess) HandLogin(mes *model.Message) (err error) {
 		return util.ERROR_UN_MARSHAL_FAILED
 	}
 
-	//返回消息
-	var resMessage model.Message
-	resMessage.Type = util.LoginResMesType
-
 	//返回登录信息
 	var loginres model.LoginRes
 	var userservice service.UserService = service.UserService{}
@@ -57,18 +53,11 @@ func (U *UserProcess) HandLogin(mes *model.Message) (err error) {
 		return util.ERROR_MARSHAL_FAILED
 	}
 
-	resMessage.Data = string(data)
-
-	data, err = json.Marshal(resMessage)
-	if err != nil {
-		return util.ERROR_MARSHAL_FAILED
-	}
-
 	// 发送data
 	var tf *util.Transfer = &util.Transfer{
 		Conn: U.Conn,
 	}
-	err = tf.WritePkg(data)
+	err = tf.SendMessage(data, util.LoginResMesType)
 	if err != nil {
 		return err
 	}
@@ -76,10 +65,6 @@ func (U *UserProcess) HandLogin(mes *model.Message) (err error) {
 }
 
 func (U *UserProcess) HandRegist(mes *model.Message) (err error) {
-
-	//返回消息
-	var registRes model.Message
-	registRes.Type = util.RegistResMesType
 
 	//先从mes中取出信息并反序列化
 	var registmes model.RegistMes
@@ -115,19 +100,11 @@ func (U *UserProcess) HandRegist(mes *model.Message) (err error) {
 		return util.ERROR_MARSHAL_FAILED
 	}
 
-	registRes.Data = string(data)
-
-	data, err = json.Marshal(registRes)
-
-	if err != nil {
-		return util.ERROR_MARSHAL_FAILED
-	}
-
 	// 发送data
 	var tf *util.Transfer = &util.Transfer{
 		Conn: U.Conn,
 	}
-	err = tf.WritePkg(data)
+	err = tf.SendMessage(data, util.RegistResMesType)
 	if err != nil {
 		return err
 	}
@@ -135,8 +112,6 @@ func (U *UserProcess) HandRegist(mes *model.Message) (err error) {
 }
 
 func (U *UserProcess) HandExit(mes *model.Message) (err error) {
-	var mesRes model.Message
-	mesRes.Type = util.ExitType
 
 	var exitRes model.ExitResMes
 	var exitMes model.ExitMes
@@ -157,22 +132,37 @@ func (U *UserProcess) HandExit(mes *model.Message) (err error) {
 		return err
 	}
 
-	mesRes.Data = string(data)
-
-	data, err = json.Marshal(mesRes)
-
-	if err != nil {
-		return err
-	}
-
 	// 发送data
 	var tf *util.Transfer = &util.Transfer{
 		Conn: U.Conn,
 	}
-	err = tf.WritePkg(data)
+	err = tf.SendMessage(data, util.ExitType)
 	if err != nil {
 		return err
 	}
 	return util.ERROR_EXIT_SUCCESS
 
+}
+
+// 因为获取线上用户的请求体暂时为空
+// 所以这里就先不获取请求体的参数了
+func (U *UserProcess) ReturnOnlineList() (err error) {
+	var onlineres model.OnlineListRes
+	for k, _ := range UserMgr.OnlineUser {
+		onlineres.OnlineList = append(onlineres.OnlineList, k)
+	}
+
+	onlineres.Errno = util.Success
+	onlineres.Message = "成功"
+
+	data, err := json.Marshal(onlineres)
+
+	var tf *util.Transfer = &util.Transfer{
+		Conn: U.Conn,
+	}
+	err = tf.SendMessage(data, util.OnlineListType)
+	if err != nil {
+		return err
+	}
+	return nil
 }

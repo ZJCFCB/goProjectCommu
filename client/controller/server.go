@@ -30,6 +30,12 @@ func (U *Userserve) ServerProcessMessage() {
 		switch key {
 		case 1:
 			fmt.Println("显示在线用户列表")
+			onlineList, err := U.OnlineList()
+			if err == nil {
+				fmt.Println("当前在线列表是 ", onlineList)
+			} else {
+				fmt.Println(err)
+			}
 		case 2:
 			fmt.Println("发送消息")
 		case 3:
@@ -52,8 +58,6 @@ func (U *Userserve) ServerProcessMessage() {
 }
 
 func (U *Userserve) Exit() (bool, error) {
-	var mes model.Message
-	mes.Type = util.ExitType
 
 	var exitMes model.ExitMes
 	exitMes.UserId = U.Id
@@ -63,25 +67,17 @@ func (U *Userserve) Exit() (bool, error) {
 		return false, util.ERROR_MARSHAL_FAILED
 	}
 
-	mes.Data = string(data)
-
-	data, err = json.Marshal(mes)
-
-	if err != nil {
-		return false, util.ERROR_MARSHAL_FAILED
-	}
-
 	tf := util.Transfer{
 		Conn: U.Conn,
 	}
 
-	err = tf.WritePkg(data)
+	err = tf.SendMessage(data, util.ExitType)
 
 	if err != nil {
 		return false, err
 	}
 
-	mes, err = tf.ReadPkg()
+	mes, err := tf.ReadPkg()
 
 	if err != nil {
 		return false, err
@@ -102,4 +98,40 @@ func (U *Userserve) Exit() (bool, error) {
 		return false, util.ERROR_EXIT_FAIL
 	}
 	return false, util.ERROR_UN_KNOW
+}
+
+func (U *Userserve) OnlineList() (onlineList []int, err error) {
+
+	var onlineMes model.OnlineListMes
+
+	onlineMes.UserId = U.Id
+
+	data, err := json.Marshal(onlineMes)
+
+	if err != nil {
+		return onlineList, util.ERROR_MARSHAL_FAILED
+	}
+
+	tf := util.Transfer{
+		Conn: U.Conn,
+	}
+
+	err = tf.SendMessage(data, util.OnlineListType)
+
+	if err != nil {
+		return onlineList, err
+	}
+
+	mes, err := tf.ReadPkg()
+	if err != nil {
+		return onlineList, err
+	}
+
+	var onlineRes model.OnlineListRes
+
+	err = json.Unmarshal([]byte(mes.Data), &onlineRes)
+	if err != nil {
+		return onlineRes.OnlineList, util.ERROR_UN_MARSHAL_FAILED
+	}
+	return onlineRes.OnlineList, nil
 }

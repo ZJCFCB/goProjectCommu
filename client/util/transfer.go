@@ -4,6 +4,7 @@ import (
 	"client/model"
 	"encoding/binary"
 	"encoding/json"
+	"fmt"
 	"net"
 )
 
@@ -61,4 +62,23 @@ func (T *Transfer) ReadPkg() (mes model.Message, err error) {
 		return mes, ERROR_UN_MARSHAL_FAILED
 	}
 	return mes, nil
+}
+
+func (T *Transfer) SendMessage(data []byte, mesType string) (err error) {
+	var mes model.Message
+	mes.Type = mesType
+	mes.Data = string(data)
+	d, err := json.Marshal(mes)
+
+	if err != nil {
+		return ERROR_MARSHAL_FAILED
+	}
+
+	err = T.WritePkg(d)
+
+	if err != nil {
+		return err
+	}
+	fmt.Println("the sending mes is ", string(d))
+	return nil
 }
