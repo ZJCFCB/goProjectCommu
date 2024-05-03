@@ -14,6 +14,7 @@ import (
 type UserProcess struct {
 	Conn net.Conn
 	Id   int
+	Tf   *util.Transfer
 }
 
 func (U *UserProcess) MakeConn(ip string) (err error) { //与传进来的ip建立链接（服务器）
@@ -39,19 +40,14 @@ func (U *UserProcess) LoginCheck(id int, passwd string) (isok bool, err error) {
 		return false, util.ERROR_MARSHAL_FAILED
 	}
 
-	// 用于控制收发数据
-	tf := &util.Transfer{
-		Conn: U.Conn,
-	}
-
-	err = tf.SendMessage(data, util.LoginMesType)
+	err = U.Tf.SendMessage(data, util.LoginMesType)
 
 	if err != nil {
 		return false, err
 	}
 
 	//处理返回的数据
-	mes, err := tf.ReadPkg()
+	mes, err := U.Tf.ReadPkg()
 
 	if err != nil {
 		return false, err
@@ -91,17 +87,13 @@ func (U *UserProcess) Regist(id int, passwd, name string) (isok bool, err error)
 		return false, util.ERROR_MARSHAL_FAILED
 	}
 
-	//开始跟服务器端转发消息
-
-	tf := &util.Transfer{Conn: U.Conn}
-
-	err = tf.SendMessage(data, util.RegistMesType)
+	err = U.Tf.SendMessage(data, util.RegistMesType)
 	if err != nil {
 		return false, err
 	}
 
 	//然后等待读取服务器端返回的数据
-	mes, err := tf.ReadPkg()
+	mes, err := U.Tf.ReadPkg()
 
 	if err != nil {
 		return false, err

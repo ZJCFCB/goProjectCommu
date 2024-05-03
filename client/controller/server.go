@@ -11,6 +11,7 @@ import (
 type Userserve struct {
 	Conn net.Conn
 	Id   int
+	Tf   *util.Transfer
 }
 
 //显示登录成功的界面
@@ -67,17 +68,13 @@ func (U *Userserve) Exit() (bool, error) {
 		return false, util.ERROR_MARSHAL_FAILED
 	}
 
-	tf := util.Transfer{
-		Conn: U.Conn,
-	}
-
-	err = tf.SendMessage(data, util.ExitType)
+	err = U.Tf.SendMessage(data, util.ExitType)
 
 	if err != nil {
 		return false, err
 	}
 
-	mes, err := tf.ReadPkg()
+	mes, err := U.Tf.ReadPkg()
 
 	if err != nil {
 		return false, err
@@ -112,17 +109,13 @@ func (U *Userserve) OnlineList() (onlineList []int, err error) {
 		return onlineList, util.ERROR_MARSHAL_FAILED
 	}
 
-	tf := util.Transfer{
-		Conn: U.Conn,
-	}
-
-	err = tf.SendMessage(data, util.OnlineListType)
+	err = U.Tf.SendMessage(data, util.OnlineListType)
 
 	if err != nil {
 		return onlineList, err
 	}
 
-	mes, err := tf.ReadPkg()
+	mes, err := U.Tf.ReadPkg()
 	if err != nil {
 		return onlineList, err
 	}

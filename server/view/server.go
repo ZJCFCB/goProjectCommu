@@ -32,6 +32,7 @@ func (s *EnterServer) Run() (err error) {
 // 用BaseProcess来控制与当前连接用户的通讯
 func Communication(conn net.Conn) {
 	pro := controller.BaseProcess{Conn: conn}
+	pro.Up = &controller.UserProcess{Conn: conn, Tf: &util.Transfer{Conn: conn}}
 	_ = pro.Process()
 	conn.Close()
 }

@@ -41,6 +41,8 @@ func (c *EnterClient) Run() {
 			up.MakeConn("localhost:8889")
 			defer up.Conn.Close() //记得退出的时候关闭连接
 
+			up.Tf = &util.Transfer{Conn: up.Conn}
+
 			//根据用户输入的账号密码进行登录校验
 			ok, err := up.LoginCheck(id, password)
 			up.Id = id
@@ -50,6 +52,7 @@ func (c *EnterClient) Run() {
 				var us *controller.Userserve = &controller.Userserve{
 					Conn: up.Conn,
 					Id:   id,
+					Tf:   &util.Transfer{Conn: up.Conn},
 				}
 				us.ServerProcessMessage()
 			} else {
@@ -72,7 +75,7 @@ func (c *EnterClient) Run() {
 
 			up.MakeConn("localhost:8889") //与服务器建立连接（8889端口）
 			defer up.Conn.Close()         //记得退出的时候关闭连接
-
+			up.Tf = &util.Transfer{Conn: up.Conn}
 			ok, err := up.Regist(id, passwd, name)
 
 			if ok {

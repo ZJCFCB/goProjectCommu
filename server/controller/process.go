@@ -12,25 +12,23 @@ import (
 */
 type BaseProcess struct {
 	Conn net.Conn
+	Up   *UserProcess
 }
 
 func (B *BaseProcess) ServerProcessMes(mes *model.Message) (err error) { // 根据消息类型的不同，调用不同的处理函数
 	switch mes.Type {
 	case util.LoginMesType:
 		// 处理登录的相关信息
-		up := &UserProcess{Conn: B.Conn}
-		err = up.HandLogin(mes)
+
+		err = B.Up.HandLogin(mes)
 	case util.RegistMesType:
 		//处理注册相关的信息
-		up := &UserProcess{Conn: B.Conn}
-		err = up.HandRegist(mes)
+		err = B.Up.HandRegist(mes)
 	case util.ExitType:
 		//处理用户退出的相关信息
-		up := &UserProcess{Conn: B.Conn}
-		err = up.HandExit(mes)
+		err = B.Up.HandExit(mes)
 	case util.OnlineListType:
-		up := &UserProcess{Conn: B.Conn}
-		err = up.ReturnOnlineList()
+		err = B.Up.ReturnOnlineList()
 
 	default:
 	}
@@ -41,8 +39,7 @@ func (B *BaseProcess) ServerProcessMes(mes *model.Message) (err error) { // 根�
 // 不停地读取用户传过来的信息
 func (B *BaseProcess) Process() (err error) {
 	for {
-		tf := &util.Transfer{Conn: B.Conn}
-		mess, err := tf.ReadPkg()
+		mess, err := B.Up.Tf.ReadPkg()
 		if err != nil {
 			return err
 		}

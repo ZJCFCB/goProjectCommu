@@ -11,6 +11,7 @@ import (
 type UserProcess struct {
 	Conn   net.Conn
 	UserId int
+	Tf     *util.Transfer
 }
 
 func (U *UserProcess) HandLogin(mes *model.Message) (err error) {
@@ -53,11 +54,7 @@ func (U *UserProcess) HandLogin(mes *model.Message) (err error) {
 		return util.ERROR_MARSHAL_FAILED
 	}
 
-	// 发送data
-	var tf *util.Transfer = &util.Transfer{
-		Conn: U.Conn,
-	}
-	err = tf.SendMessage(data, util.LoginResMesType)
+	err = U.Tf.SendMessage(data, util.LoginResMesType)
 	if err != nil {
 		return err
 	}
@@ -100,11 +97,7 @@ func (U *UserProcess) HandRegist(mes *model.Message) (err error) {
 		return util.ERROR_MARSHAL_FAILED
 	}
 
-	// 发送data
-	var tf *util.Transfer = &util.Transfer{
-		Conn: U.Conn,
-	}
-	err = tf.SendMessage(data, util.RegistResMesType)
+	err = U.Tf.SendMessage(data, util.RegistResMesType)
 	if err != nil {
 		return err
 	}
@@ -157,10 +150,7 @@ func (U *UserProcess) ReturnOnlineList() (err error) {
 
 	data, err := json.Marshal(onlineres)
 
-	var tf *util.Transfer = &util.Transfer{
-		Conn: U.Conn,
-	}
-	err = tf.SendMessage(data, util.OnlineListType)
+	err = U.Tf.SendMessage(data, util.OnlineListType)
 	if err != nil {
 		return err
 	}
