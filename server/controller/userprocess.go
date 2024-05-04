@@ -11,6 +11,7 @@ import (
 type UserProcess struct {
 	Conn   net.Conn
 	UserId int
+	Name   string
 	Tf     *util.Transfer
 }
 
@@ -27,15 +28,17 @@ func (U *UserProcess) HandLogin(mes *model.Message) (err error) {
 	var userservice service.UserService = service.UserService{}
 
 	//进行登录校验
-	_, err = userservice.Login(loginMessage.UserId, loginMessage.UserPwd)
+	user, err := userservice.Login(loginMessage.UserId, loginMessage.UserPwd)
 
 	// 根据error 决定返回的状态码是多少
 	switch err {
 	case nil:
 		loginres.Errno = util.Success
 		loginres.Message = "登录成功"
+		loginres.Name = user.UserName
 		//登录成功后，把在线用户的id和userprecess放入在线列表中
 		U.UserId = loginMessage.UserId
+		U.Name = user.UserName
 		UserMgr.AddOnlineUser(U)
 
 	case util.ERROR_USER_NOTEXIT:
@@ -155,4 +158,16 @@ func (U *UserProcess) ReturnOnlineList() (err error) {
 		return err
 	}
 	return nil
+}
+
+func (U *UserProcess) HandMesGroup(mes *model.Message) (err error) {
+	var toall model.MesGroup
+
+	err = json.Unmarshal([]byte(mes.Data), &toall)
+
+	if err != nil {
+		return util.ERROR_UN_MARSHAL_FAILED
+	}
+
+	return SendMessageGroup(toall.Toall, toall.Id, toall.Name)
 }

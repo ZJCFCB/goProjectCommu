@@ -30,6 +30,8 @@ func (MP *MessageProcess) HandMessageFromService() {
 		switch mes.Type {
 		case util.OnlineListType:
 			HandLoginResMes(mes.Data)
+		case util.MessageGroupResType:
+			HandMesGroupRes(mes.Data)
 		}
 
 	}
@@ -45,5 +47,19 @@ func HandLoginResMes(data string) {
 		fmt.Println("在线用户列表是 ", onlineRes.OnlineList)
 	} else {
 		fmt.Println("获取用户列表失败，", onlineRes.Message)
+	}
+}
+
+func HandMesGroupRes(data string) {
+	var mesgroup model.MesGroupRes
+	err := json.Unmarshal([]byte(data), &mesgroup)
+	if err != nil {
+		fmt.Println(util.ERROR_UN_MARSHAL_FAILED)
+	}
+
+	if mesgroup.Errno == util.Success {
+		fmt.Printf("收到了来自用户 %s 的群发消息，内容是 : %s \n", mesgroup.Name, mesgroup.Toall)
+	} else {
+		fmt.Println("获取群发消息失败 ", mesgroup.Message)
 	}
 }

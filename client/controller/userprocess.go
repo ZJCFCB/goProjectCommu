@@ -14,6 +14,7 @@ import (
 type UserProcess struct {
 	Conn net.Conn
 	Id   int
+	Name string
 	Tf   *util.Transfer
 }
 
@@ -26,7 +27,7 @@ func (U *UserProcess) MakeConn(ip string) (err error) { //与传进来的ip建�
 	return nil
 }
 
-func (U *UserProcess) LoginCheck(id int, passwd string) (isok bool, err error) {
+func (U *UserProcess) LoginCheck(id int, passwd string) (isok bool, err error, name string) {
 
 	//model.LoginMes 封装登录信息，包括用户id、密码、用户名字
 	var loginMes model.LoginMes
@@ -37,36 +38,36 @@ func (U *UserProcess) LoginCheck(id int, passwd string) (isok bool, err error) {
 	//Marshal 序列化后的data 类型为 []byte
 	data, err := json.Marshal(loginMes)
 	if err != nil {
-		return false, util.ERROR_MARSHAL_FAILED
+		return false, util.ERROR_MARSHAL_FAILED, name
 	}
 
 	err = U.Tf.SendMessage(data, util.LoginMesType)
 
 	if err != nil {
-		return false, err
+		return false, err, name
 	}
 
 	//处理返回的数据
 	mes, err := U.Tf.ReadPkg()
 
 	if err != nil {
-		return false, err
+		return false, err, name
 	}
 
 	var loginResMes model.LoginRes
 	err = json.Unmarshal([]byte(mes.Data), &loginResMes) // 对收到的数据反序列化
 
 	if err != nil {
-		return false, util.ERROR_UN_MARSHAL_FAILED
+		return false, util.ERROR_UN_MARSHAL_FAILED, name
 	}
 
 	switch loginResMes.Errno {
 	case util.Success:
-		return true, nil
+		return true, nil, loginResMes.Name
 	case util.NoRegistered:
-		return false, util.ERROR_USER_NOTEXIT
+		return false, util.ERROR_USER_NOTEXIT, loginResMes.Name
 	case util.PasswdIsWrong:
-		return false, util.ERROR_PASSWD_RONG
+		return false, util.ERROR_PASSWD_RONG, loginResMes.Name
 	}
 	return
 }

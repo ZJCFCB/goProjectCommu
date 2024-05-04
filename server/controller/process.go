@@ -19,7 +19,6 @@ func (B *BaseProcess) ServerProcessMes(mes *model.Message) (err error) { // 根�
 	switch mes.Type {
 	case util.LoginMesType:
 		// 处理登录的相关信息
-
 		err = B.Up.HandLogin(mes)
 	case util.RegistMesType:
 		//处理注册相关的信息
@@ -28,8 +27,11 @@ func (B *BaseProcess) ServerProcessMes(mes *model.Message) (err error) { // 根�
 		//处理用户退出的相关信息
 		err = B.Up.HandExit(mes)
 	case util.OnlineListType:
+		//处理在线用户列表
 		err = B.Up.ReturnOnlineList()
-
+	case util.MessageGroupType:
+		//群发消息
+		err = B.Up.HandMesGroup(mes)
 	default:
 	}
 	return err

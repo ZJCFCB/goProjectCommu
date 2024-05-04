@@ -9,4 +9,5 @@ type LoginMes struct {
 type LoginRes struct {
 	Errno   int    `json:"errno"`
 	Message string `json:"message"`
+	Name    string `json:"name`
 }

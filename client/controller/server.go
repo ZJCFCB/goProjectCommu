@@ -13,6 +13,7 @@ type Userserve struct {
 	Conn net.Conn
 	Id   int
 	Tf   *util.Transfer
+	Name string
 }
 
 //显示登录成功的界面
@@ -45,7 +46,14 @@ func (U *Userserve) ServerProcessMessage() {
 		case 2:
 			fmt.Println("发送消息")
 		case 3:
-			fmt.Println("群发消息")
+			var message string
+			fmt.Printf("请输入群发消息的内容 :")
+			fmt.Scanln(&message)
+
+			err := U.SendGroup(message)
+			if err != nil {
+				fmt.Println(err)
+			}
 		case 4:
 			fmt.Println("退出登录")
 			loop = util.Exit()
@@ -115,6 +123,26 @@ func (U *Userserve) OnlineList() (err error) {
 	}
 
 	err = U.Tf.SendMessage(data, util.OnlineListType)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (U *Userserve) SendGroup(message string) (err error) {
+	var mesgroup model.MesGroup
+	mesgroup.Toall = message
+	mesgroup.Id = U.Id
+	mesgroup.Name = U.Name
+	data, err := json.Marshal(mesgroup)
+
+	if err != nil {
+		return util.ERROR_MARSHAL_FAILED
+	}
+
+	err = U.Tf.SendMessage(data, util.MessageGroupType)
 
 	if err != nil {
 		return err

@@ -44,8 +44,9 @@ func (c *EnterClient) Run() {
 			up.Tf = &util.Transfer{Conn: up.Conn}
 
 			//根据用户输入的账号密码进行登录校验
-			ok, err := up.LoginCheck(id, password)
+			ok, err, name := up.LoginCheck(id, password)
 			up.Id = id
+			up.Name = name
 			if ok {
 				fmt.Println("登录成功")
 				//登录成果后用户在这里面完成登陆后的操作 比如聊天
@@ -53,6 +54,7 @@ func (c *EnterClient) Run() {
 					Conn: up.Conn,
 					Id:   id,
 					Tf:   &util.Transfer{Conn: up.Conn},
+					Name: name,
 				}
 				us.ServerProcessMessage()
 			} else {
