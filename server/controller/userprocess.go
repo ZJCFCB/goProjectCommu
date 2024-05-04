@@ -171,3 +171,15 @@ func (U *UserProcess) HandMesGroup(mes *model.Message) (err error) {
 
 	return SendMessageGroup(toall.Toall, toall.Id, toall.Name)
 }
+
+func (U *UserProcess) HandMesSide(mes *model.Message) (err error) {
+	var toside model.MesSide
+
+	err = json.Unmarshal([]byte(mes.Data), &toside)
+
+	if err != nil {
+		return util.ERROR_UN_MARSHAL_FAILED
+	}
+
+	return SendMessageSide(&toside)
+}

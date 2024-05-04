@@ -32,6 +32,9 @@ func (B *BaseProcess) ServerProcessMes(mes *model.Message) (err error) { // 根�
 	case util.MessageGroupType:
 		//群发消息
 		err = B.Up.HandMesGroup(mes)
+	case util.MessageSideType:
+		//处理私聊消息
+		err = B.Up.HandMesSide(mes)
 	default:
 	}
 	return err

@@ -26,3 +26,32 @@ func SendMessageGroup(toall string, id int, name string) error {
 	}
 	return nil
 }
+
+func SendMessageSide(toside *model.MesSide) (err error) {
+	var mes model.MesSideRes
+
+	up, ok := UserMgr.OnlineUser[toside.ToId]
+
+	if !ok {
+		//此用户不在线
+		return util.ERROR_USER_NOT_ONLINE
+	} else {
+		mes.Errno = util.Success
+		mes.Message = "成功"
+		mes.Idfrom = toside.MyId
+		mes.Namefrom = toside.MyName
+		mes.Side = toside.Side
+
+		data, err := json.Marshal(mes)
+
+		if err != nil {
+			return util.ERROR_MARSHAL_FAILED
+		}
+
+		err = up.Tf.SendMessage(data, util.MessageSideResType)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

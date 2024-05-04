@@ -10,4 +10,6 @@ const (
 	OnlineListType      = "OnlineListType"
 	MessageGroupType    = "MessageGroupType"
 	MessageGroupResType = "MessageGroupType"
+	MessageSideType     = "MessageSideType"
+	MessageSideResType  = "MessageSideResType"
 )

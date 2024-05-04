@@ -32,6 +32,8 @@ func (MP *MessageProcess) HandMessageFromService() {
 			HandLoginResMes(mes.Data)
 		case util.MessageGroupResType:
 			HandMesGroupRes(mes.Data)
+		case util.MessageSideResType:
+			HandMesSideRes(mes.Data)
 		}
 
 	}
@@ -61,5 +63,19 @@ func HandMesGroupRes(data string) {
 		fmt.Printf("收到了来自用户 %s 的群发消息，内容是 : %s \n", mesgroup.Name, mesgroup.Toall)
 	} else {
 		fmt.Println("获取群发消息失败 ", mesgroup.Message)
+	}
+}
+
+func HandMesSideRes(data string) {
+	var mesSide model.MesSideRes
+	err := json.Unmarshal([]byte(data), &mesSide)
+	if err != nil {
+		fmt.Println(util.ERROR_UN_MARSHAL_FAILED)
+	}
+
+	if mesSide.Errno == util.Success {
+		fmt.Printf("收到了来自用户 %s 的私信,它的id是 %d , 内容是 %s\n", mesSide.Namefrom, mesSide.Idfrom, mesSide.Side)
+	} else {
+		fmt.Println("获取私聊消息失败 ", mesSide.Message)
 	}
 }

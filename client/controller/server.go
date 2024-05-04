@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-	"time"
 )
 
 type Userserve struct {
@@ -29,10 +28,9 @@ func (U *Userserve) ServerProcessMessage() {
 	go Mg.ReadFromService(U.Tf)
 	go Mg.HandMessageFromService()
 	for {
-		time.Sleep(time.Millisecond * 500)
 		fmt.Println("---------------------登录成功---------------------")
 		fmt.Println("\t\t\t1.显示在线用户列表")
-		fmt.Println("\t\t\t2.私聊发送消息")
+		fmt.Println("\t\t\t2.私发消息")
 		fmt.Println("\t\t\t3.群发消息")
 		fmt.Println("\t\t\t4.退出登录")
 		fmt.Printf("请选择(1-4) : ")
@@ -44,7 +42,16 @@ func (U *Userserve) ServerProcessMessage() {
 				fmt.Println(err)
 			}
 		case 2:
-			fmt.Println("发送消息")
+			var message string
+			var id int
+			fmt.Printf("请输入你要私法消息的用户id ：")
+			fmt.Scanln(&id)
+			fmt.Printf("请输入消息内容：")
+			fmt.Scanln(&message)
+			err := U.SendSide(message, id)
+			if err != nil {
+				fmt.Println(err)
+			}
 		case 3:
 			var message string
 			fmt.Printf("请输入群发消息的内容 :")
@@ -148,5 +155,25 @@ func (U *Userserve) SendGroup(message string) (err error) {
 		return err
 	}
 
+	return nil
+}
+
+func (U *Userserve) SendSide(message string, id int) (err error) {
+	var mesSide model.MesSide
+	mesSide.MyId = U.Id
+	mesSide.MyName = U.Name
+	mesSide.ToId = id
+	mesSide.Side = message
+
+	data, err := json.Marshal(mesSide)
+
+	if err != nil {
+		return util.ERROR_MARSHAL_FAILED
+	}
+
+	err = U.Tf.SendMessage(data, util.MessageSideType)
+	if err != nil {
+		return err
+	}
 	return nil
 }

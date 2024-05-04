@@ -8,6 +8,7 @@ const (
 	PasswdIsWrong
 	UserHasExist
 	ExitFailed
+	UserNotOnline
 )
 
 const (
