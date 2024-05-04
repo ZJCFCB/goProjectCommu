@@ -8,4 +8,5 @@ const (
 	OnlineFriendType = "OnlineFriendType"
 	ExitType         = "ExitType"
 	OnlineListType   = "OnlineListType"
+	ServerMessage    = "ServerMessage"
 )

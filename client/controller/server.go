@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"time"
 )
 
 type Userserve struct {
@@ -20,27 +21,31 @@ func (U *Userserve) ServerProcessMessage() {
 	var key int
 	var loop bool = false
 
+	var Mg *MessageProcess = &MessageProcess{
+		Channel: make(chan model.Message, 10),
+	}
+
+	go Mg.ReadFromService(U.Tf)
+	go Mg.HandMessageFromService()
 	for {
+		time.Sleep(time.Millisecond * 500)
 		fmt.Println("---------------------登录成功---------------------")
 		fmt.Println("\t\t\t1.显示在线用户列表")
-		fmt.Println("\t\t\t2.发送消息")
-		fmt.Println("\t\t\t3.显示登录信息列表")
+		fmt.Println("\t\t\t2.私聊发送消息")
+		fmt.Println("\t\t\t3.群发消息")
 		fmt.Println("\t\t\t4.退出登录")
 		fmt.Printf("请选择(1-4) : ")
 		fmt.Scanln(&key)
 		switch key {
 		case 1:
-			fmt.Println("显示在线用户列表")
-			onlineList, err := U.OnlineList()
-			if err == nil {
-				fmt.Println("当前在线列表是 ", onlineList)
-			} else {
+			err := U.OnlineList()
+			if err != nil {
 				fmt.Println(err)
 			}
 		case 2:
 			fmt.Println("发送消息")
 		case 3:
-			fmt.Println("信息列表")
+			fmt.Println("群发消息")
 		case 4:
 			fmt.Println("退出登录")
 			loop = util.Exit()
@@ -97,7 +102,7 @@ func (U *Userserve) Exit() (bool, error) {
 	return false, util.ERROR_UN_KNOW
 }
 
-func (U *Userserve) OnlineList() (onlineList []int, err error) {
+func (U *Userserve) OnlineList() (err error) {
 
 	var onlineMes model.OnlineListMes
 
@@ -106,25 +111,14 @@ func (U *Userserve) OnlineList() (onlineList []int, err error) {
 	data, err := json.Marshal(onlineMes)
 
 	if err != nil {
-		return onlineList, util.ERROR_MARSHAL_FAILED
+		return util.ERROR_MARSHAL_FAILED
 	}
 
 	err = U.Tf.SendMessage(data, util.OnlineListType)
 
 	if err != nil {
-		return onlineList, err
+		return err
 	}
 
-	mes, err := U.Tf.ReadPkg()
-	if err != nil {
-		return onlineList, err
-	}
-
-	var onlineRes model.OnlineListRes
-
-	err = json.Unmarshal([]byte(mes.Data), &onlineRes)
-	if err != nil {
-		return onlineRes.OnlineList, util.ERROR_UN_MARSHAL_FAILED
-	}
-	return onlineRes.OnlineList, nil
+	return nil
 }
