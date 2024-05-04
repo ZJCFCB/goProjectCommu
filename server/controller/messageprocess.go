@@ -7,7 +7,7 @@ import (
 )
 
 func SendMessageGroup(toall string, id int, name string) error {
-	var mes model.MesGroupRes
+	var mes model.MesGroupInform
 	mes.Errno = util.Success
 	mes.Message = "成功"
 	mes.Toall = toall
@@ -18,17 +18,21 @@ func SendMessageGroup(toall string, id int, name string) error {
 	if err != nil {
 		return util.ERROR_MARSHAL_FAILED
 	}
+	//遍历在线列表，群发
 	for k, v := range UserMgr.OnlineUser {
 		if k == id {
 			continue
 		}
-		v.Tf.SendMessage(data, util.MessageGroupResType)
+		err = v.Tf.SendMessage(data, util.MessageGroupInformType)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
 func SendMessageSide(toside *model.MesSide) (err error) {
-	var mes model.MesSideRes
+	var mes model.MesSideInform
 
 	up, ok := UserMgr.OnlineUser[toside.ToId]
 
@@ -48,7 +52,7 @@ func SendMessageSide(toside *model.MesSide) (err error) {
 			return util.ERROR_MARSHAL_FAILED
 		}
 
-		err = up.Tf.SendMessage(data, util.MessageSideResType)
+		err = up.Tf.SendMessage(data, util.MessageSideInformType)
 		if err != nil {
 			return err
 		}

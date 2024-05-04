@@ -169,7 +169,25 @@ func (U *UserProcess) HandMesGroup(mes *model.Message) (err error) {
 		return util.ERROR_UN_MARSHAL_FAILED
 	}
 
-	return SendMessageGroup(toall.Toall, toall.Id, toall.Name)
+	err = SendMessageGroup(toall.Toall, toall.Id, toall.Name)
+
+	//给发起群里的用户返回一个状态
+	var backinform model.MesGroupRes
+	if err == nil {
+		backinform.Errno = util.Success
+		backinform.Message = "群发信息成功"
+	} else {
+		backinform.Errno = util.SERVICE_HAS_WRONG
+		backinform.Message = "服务器内部错误，群发信息失败"
+	}
+
+	data, err := json.Marshal(backinform)
+
+	err = U.Tf.SendMessage(data, util.MessageGroupResType)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (U *UserProcess) HandMesSide(mes *model.Message) (err error) {
@@ -181,5 +199,25 @@ func (U *UserProcess) HandMesSide(mes *model.Message) (err error) {
 		return util.ERROR_UN_MARSHAL_FAILED
 	}
 
-	return SendMessageSide(&toside)
+	err = SendMessageSide(&toside)
+
+	//给发送消息的用户返回一个状态
+	var backinform model.MesSideRes
+	if err == nil {
+		backinform.Errno = util.Success
+		backinform.Message = "成功"
+	} else if err == util.ERROR_USER_NOT_ONLINE {
+		backinform.Errno = util.UserNotOnline
+		backinform.Message = "用户不在线，私聊消息发送失败"
+	} else {
+		backinform.Errno = util.SERVICE_HAS_WRONG
+		backinform.Message = "服务器内部错误，私聊信息发送失败"
+	}
+	data, err := json.Marshal(backinform)
+
+	err = U.Tf.SendMessage(data, util.MessageSideResType)
+	if err != nil {
+		return err
+	}
+	return nil
 }

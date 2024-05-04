@@ -9,6 +9,10 @@ type MesGroup struct {
 type MesGroupRes struct {
 	Errno   int    `json:"errno"`
 	Message string `json:"message"`
+}
+type MesGroupInform struct {
+	Errno   int    `json:"errno"`
+	Message string `json:"message"`
 	Toall   string `json:"toall"`
 	Idfrom  int    `json:"idfrom"`
 	Name    string `json:"name"`

@@ -8,6 +8,11 @@ type MesSide struct {
 }
 
 type MesSideRes struct {
+	Errno   int    `json:"errno"`
+	Message string `json:"message"`
+}
+
+type MesSideInform struct {
 	Errno    int    `json:"errno"`
 	Message  string `json:"message"`
 	Side     string `json:"side"`

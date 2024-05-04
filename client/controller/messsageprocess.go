@@ -30,6 +30,10 @@ func (MP *MessageProcess) HandMessageFromService() {
 		switch mes.Type {
 		case util.OnlineListType:
 			HandLoginResMes(mes.Data)
+		case util.MessageGroupInformType:
+			HandMesGroupInform(mes.Data)
+		case util.MessageSideInformType:
+			HandMesSideInform(mes.Data)
 		case util.MessageGroupResType:
 			HandMesGroupRes(mes.Data)
 		case util.MessageSideResType:
@@ -52,8 +56,8 @@ func HandLoginResMes(data string) {
 	}
 }
 
-func HandMesGroupRes(data string) {
-	var mesgroup model.MesGroupRes
+func HandMesGroupInform(data string) {
+	var mesgroup model.MesGroupInform
 	err := json.Unmarshal([]byte(data), &mesgroup)
 	if err != nil {
 		fmt.Println(util.ERROR_UN_MARSHAL_FAILED)
@@ -66,8 +70,8 @@ func HandMesGroupRes(data string) {
 	}
 }
 
-func HandMesSideRes(data string) {
-	var mesSide model.MesSideRes
+func HandMesSideInform(data string) {
+	var mesSide model.MesSideInform
 	err := json.Unmarshal([]byte(data), &mesSide)
 	if err != nil {
 		fmt.Println(util.ERROR_UN_MARSHAL_FAILED)
@@ -77,5 +81,33 @@ func HandMesSideRes(data string) {
 		fmt.Printf("收到了来自用户 %s 的私信,它的id是 %d , 内容是 %s\n", mesSide.Namefrom, mesSide.Idfrom, mesSide.Side)
 	} else {
 		fmt.Println("获取私聊消息失败 ", mesSide.Message)
+	}
+}
+
+func HandMesGroupRes(data string) {
+	var mes model.MesGroupRes
+	err := json.Unmarshal([]byte(data), &mes)
+	if err != nil {
+		fmt.Println(util.ERROR_UN_MARSHAL_FAILED)
+	}
+
+	if mes.Errno == util.Success {
+		//fmt.Println("群发信息成功")
+	} else {
+		fmt.Println("群发信息失败 ", mes.Message)
+	}
+}
+
+func HandMesSideRes(data string) {
+	var mes model.MesSideRes
+	err := json.Unmarshal([]byte(data), &mes)
+	if err != nil {
+		fmt.Println(util.ERROR_UN_MARSHAL_FAILED)
+	}
+
+	if mes.Errno == util.Success {
+		//fmt.Printf("私发信息成功")
+	} else {
+		fmt.Println("私发信息失败 ", mes.Message)
 	}
 }

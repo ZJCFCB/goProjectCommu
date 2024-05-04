@@ -44,7 +44,7 @@ func (U *Userserve) ServerProcessMessage() {
 		case 2:
 			var message string
 			var id int
-			fmt.Printf("请输入你要私法消息的用户id ：")
+			fmt.Printf("请输入你要私发消息的用户id ：")
 			fmt.Scanln(&id)
 			fmt.Printf("请输入消息内容：")
 			fmt.Scanln(&message)
